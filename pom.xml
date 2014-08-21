@@ -15,4 +15,18 @@
 		<module>spring-petclinic</module>
 	</modules>
 
+    <!-- Deployment locations are configured in settings.xml -->
+    <distributionManagement>
+        <repository>
+            <id>${repositoryId}</id>
+            <name>Release repository</name>
+            <url>${repositoryUrl}</url>
+        </repository>
+        <snapshotRepository>
+            <id>${snapshotsRepositoryId}</id>
+            <name>Snapshot Repository</name>
+            <url>${snapshotsUrl}</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 </project>
