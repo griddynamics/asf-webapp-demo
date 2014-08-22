@@ -6,19 +6,20 @@ Requisites:
 
 Run UI test against a remote WebDriver:
 
-    mvn -P runTests clean test -Dthreads=1 \
-        -Dsuite.all=**/*Suite.java -Dsuite.list=UITestsExampleSuite \
+    mvn -P integration-test clean verify \
         -Dspring.profiles.active=remote \
-        -Dmeta.filters=-not_impl,-not_in_func,-blocked,-non_ci \
         -DREMOTE_WEBDRIVER_URL=http://localhost:4444/wd/hub -Dbrowser.version= \
-        -Dpetclinic.url=http://localhost:9966/petclinic
+        -Dpetclinic.url=http://localhost:9966/petclinic \
+        [ -Dthreads=1 ] \
+        [ -Dsuite.all=**/*Suite.java ] [ -Dsuite.list=UITestsExampleSuite ] \
+        [ -Dmeta.filters=-not_impl,-not_in_func,-blocked,-non_ci ]
 
-Run web service tests:
+Run web service tests using an embedded Tomcat container with provided version
+of Petclinic app:
 
-    mvn -P runTests clean test -Dthreads=1 \
-        -Dsuite.all=**/*Suite.java -Dsuite.list=WebServicesExampleSuite \
-        -Dmeta.filters=-not_impl,-not_in_func,-blocked,-non_ci \
-        -Dpetclinic.url=http://localhost:9966/petclinic
+    mvn -P functional-test clean verify \
+        -Dpetclinic.version=1.0.0-SNAPSHOT \
+        [ -Dthreads=1 ] \
+        [ -Dsuite.all=**/*Suite.java ] [ -Dsuite.list=WebServicesExampleSuite ] \
+        [ -Dmeta.filters=-not_impl,-not_in_func,-blocked,-non_ci ]
 
-(`suite.list` property is `UITestsExampleSuite` for Selenium tests and
-`WebServicesExampleSuite` - for direct tests of web service API)
