@@ -21,16 +21,18 @@
 application:
   configuration:
     input.artifact_url: "http://gd-asf.s3.amazonaws.com/petclinic.war"
-    input.artifact_checksum: "f1c52bc5b995618593855b8718ed0edbc42451a47a1154ba6236bbd2741372d0"
     input.cookbooks_url: "http://gd-asf.s3.amazonaws.com/webapp_cookbooks.tar.gz"
   interfaces:
     input:
       artifact_url: "bind(workflow#input.artifact_url)"
-      artifact_checksum: "bind(workflow#input.artifact_checksum)"
       cookbooks_url: "bind(workflow#input.cookbooks_url)"
     output:
       webapp_endpoint: "bind(workflow#result.webapp_endpoint)"
       webapp_host_ip: "bind(workflow#result.webapp_host_ip)"
+
+  bindings:
+      - [workflow, props]
+
   components:
     workflow:
       type: workflow.Instance
@@ -39,12 +41,12 @@ application:
           artifact_url:
             type: configuration(string)
             name: Artifact File URL
-          artifact_checksum:
-            type: configuration(string)
-            name: Artifact File Checksum
           cookbooks_url:
             type: configuration(string)
             name: Cookbooks Tarball URL
+        properties:
+          nexus_username: consume-signal(string)
+          nexus_password: consume-signal(string)
         result:
           webapp_endpoint:
             type: publish-signal(string)
@@ -55,11 +57,18 @@ application:
         keypair-store:
           get-keypair: "send-command(string id => object privateKey)"
 
+      required: [ properties ]
+
       configuration:
         configuration.triggers: {}
         configuration.workflows:
           launch:
             steps:
+              - get_env_props:
+                  action: getEnvironmentProperties
+                  output:
+                    env: result
+
               - start_vm:
                   action: provisionVms
                   parameters:
@@ -81,7 +90,7 @@ application:
 
               - deploy_webapp:
                   action: chefsolo
-                  precedingPhases: [ start_vm ]
+                  precedingPhases: [ get_env_props, start_vm ]
                   parameters:
                     roles: [ webapp ]
                     recipeUrl: "{$.cookbooks_url}"
@@ -90,7 +99,9 @@ application:
                     jattrs:
                       asf-webapp-demo:
                         url: "{$.artifact_url}"
-                        checksum: "{$.artifact_checksum}"
+                        auth:
+                          username: "{$.env.properties.nexus_username}"
+                          password: "{$.env.properties.nexus_password}"
 
             return:
               webapp_endpoint:
@@ -102,3 +113,10 @@ application:
             steps:
                 - destroy:
                     action: undeployEnv
+    props:
+      type: reference.Service
+      interfaces:
+        properties:
+          nexus_username: "publish-signal(string)"
+          nexus_password: "publish-signal(string)"
+

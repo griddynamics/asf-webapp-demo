@@ -20,3 +20,6 @@
 
 default['asf-webapp-demo']['url'] = nil
 default['asf-webapp-demo']['checksum'] = nil
+
+default['asf-webapp-demo']['auth']['username'] = nil
+default['asf-webapp-demo']['auth']['password'] = nil
