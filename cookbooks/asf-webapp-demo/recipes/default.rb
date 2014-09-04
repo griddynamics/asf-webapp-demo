@@ -35,12 +35,24 @@ service 'tomcat' do
   action [ :enable, :start ]
 end
 
+ruby_block 'Setup simple http auth' do
+  block do
+    require 'uri'
+    tmp_url = URI.parse(node['asf-webapp-demo']['url'])
+    tmp_url.user = node['asf-webapp-demo']['auth']['username']
+    tmp_url.password = node['asf-webapp-demo']['auth']['password']
+    node.set['asf-webapp-demo']['auth_url'] = tmp_url.to_s
+  end
+  not_if node['asf-webapp-demo']['auth'].include? nil
+end
+
+artifact_url = node['asf-webapp-demo']['auth_url'] || node['asf-webapp-demo']['url']
+
 remote_file '/var/lib/tomcat/webapps/asf-webapp-demo.war' do
   owner 'tomcat'
   group 'tomcat'
   mode 0644
-  source node['asf-webapp-demo']['url']
-  checksum node['asf-webapp-demo']['checksum']
+  source artifact_url
   notifies :restart, 'service[tomcat]'
 end
 
