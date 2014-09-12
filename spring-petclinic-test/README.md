@@ -19,6 +19,7 @@ of Petclinic app:
 
     mvn -P functional-test clean verify \
         -Dpetclinic.version=1.0.0-SNAPSHOT \
+        [ -DhttpPort=9966 ] \
         [ -Dthreads=1 ] \
         [ -Dsuite.all=**/*Suite.java ] [ -Dsuite.list=WebServicesExampleSuite ] \
         [ -Dmeta.filters=-not_impl,-not_in_func,-blocked,-non_ci ]
