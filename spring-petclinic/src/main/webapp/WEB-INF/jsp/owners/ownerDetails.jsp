@@ -19,7 +19,7 @@
     <table class="table table-striped" style="width:600px;">
         <tr>
             <th>Name</th>
-            <td><b><c:out value="${owner.firstName} ${owner.lastName}"/></b></td>
+            <td><b><c:out value="${owner.fullName}"/></b></td>
         </tr>
         <tr>
             <th>Address</th>

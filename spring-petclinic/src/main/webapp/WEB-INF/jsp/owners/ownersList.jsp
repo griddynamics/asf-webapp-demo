@@ -21,10 +21,10 @@
             <spring:url value="/owners/{ownerId}.html" var="ownerUrl">
                 <spring:param name="ownerId" value="${owner.id}"/>
             </spring:url>
-            <a href="${fn:escapeXml(ownerUrl)}"><c:out value="${owner.firstName} ${owner.lastName}"/></a>
+            <a href="${fn:escapeXml(ownerUrl)}"><c:out value="${owner.fullName}"/></a>
         </datatables:column>
         <datatables:column title="Name" display="pdf">
-            <c:out value="${owner.firstName} ${owner.lastName}"/>
+            <c:out value="${owner.fullName}"/>
         </datatables:column>
         <datatables:column title="Address" property="address" cssStyle="width: 200px;"/>
         <datatables:column title="City" property="city"/>

@@ -52,5 +52,12 @@ public class Person extends BaseEntity {
         this.lastName = lastName;
     }
 
+    public String getFullName() {
+        return String.format("%s %s", this.firstName, this.lastName);
+    }
+
+    public void setFullName(String fullName) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("FullName is read-only");
+    }
 
 }
