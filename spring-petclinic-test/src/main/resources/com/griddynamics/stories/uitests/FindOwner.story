@@ -10,3 +10,4 @@ Then Pet Clinic Find Owners Page is opened
 
 When customer clicks Find Owner button
 Then Owners table is displayed on page
+And element Owners table contains Carlos Estaban
