@@ -18,7 +18,7 @@
 
     <datatables:table id="vets" data="${vets.vetList}" row="vet" theme="bootstrap2" cssClass="table table-striped" pageable="false" info="false">
         <datatables:column title="Name">
-            <c:out value="${vet.firstName} ${vet.lastName}"></c:out>
+            <c:out value="${vet.fullName}"></c:out>
         </datatables:column>
         <datatables:column title="Specialties">
             <c:forEach var="specialty" items="${vet.specialties}">
