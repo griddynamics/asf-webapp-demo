@@ -65,6 +65,7 @@ public class VisitsViewTests {
         actions.andExpect(status().isOk());
         actions.andExpect(content().contentType("application/xml"));
         actions.andExpect(xpath("/vets/vetList[id=1]/firstName").string(containsString("James")));
+        actions.andExpect(xpath("/vets/vetList[id=1]/fullName").string(containsString("James Carter")));
 
     }
 }
