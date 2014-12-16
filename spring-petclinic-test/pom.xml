@@ -40,7 +40,7 @@
         <spring.version>3.2.4.RELEASE</spring.version>
         <log4j.version>1.2.17</log4j.version>
         <hamcrest.version>1.3</hamcrest.version>
-        <gdframework.version>1.0-SNAPSHOT</gdframework.version>
+        <gdframework.version>1.1.0</gdframework.version>
     </properties>
 
     <dependencies>
