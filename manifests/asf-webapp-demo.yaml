@@ -20,11 +20,17 @@
 
 application:
   configuration:
-    input.artifact_url: "http://gd-asf.s3.amazonaws.com/petclinic.war"
+    input.artifact_repo: "builds-main"
+    input.artifact_group: "com.griddynamics.asf.webapp-demo"
+    input.artifact_id: "asf-webapp-demo"
     input.cookbooks_url: "http://gd-asf.s3.amazonaws.com/webapp_cookbooks.tar.gz"
   interfaces:
     input:
-      artifact_url: "bind(workflow#input.artifact_url)"
+      nexus_url: "bind(workflow#input.nexus_url)"
+      artifact_version: "bind(workflow#input.artifact_version)"
+      artifact_repo: "bind(workflow#input.artifact_repo)"
+      artifact_group: "bind(workflow#input.artifact_group)"
+      artifact_id: "bind(workflow#input.artifact_id)"
       cookbooks_url: "bind(workflow#input.cookbooks_url)"
     output:
       webapp_endpoint: "bind(workflow#result.webapp_endpoint)"
@@ -38,9 +44,21 @@ application:
       type: workflow.Instance
       interfaces:
         input:
-          artifact_url:
+          nexus_url:
             type: configuration(string)
-            name: Artifact File URL
+            name: Nexus instance url
+          artifact_version:
+            type: configuration(string)
+            name: Nexus artifact version
+          artifact_repo:
+            type: configuration(string)
+            name: Nexus artifact repository
+          artifact_group:
+            type: configuration(string)
+            name: Nexus artifact group
+          artifact_id:
+            type: configuration(string)
+            name: Nexus artifact id
           cookbooks_url:
             type: configuration(string)
             name: Cookbooks Tarball URL
@@ -98,7 +116,7 @@ application:
                     version: "11.8.2"
                     jattrs:
                       asf-webapp-demo:
-                        url: "{$.artifact_url}"
+                        url: '{$.nexus_url}/service/local/artifact/maven/content?r={$.artifact_repo}&g={$.artifact_group}&a={$.artifact_id}&v={$.artifact_version}&e=war'
                         auth:
                           username: "{$.env.properties.nexus_username}"
                           password: "{$.env.properties.nexus_password}"
