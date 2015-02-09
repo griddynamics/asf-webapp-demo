@@ -39,12 +39,12 @@
     </bean>
 
     <beans profile="remote">
-        <bean id="driverProvider" class="org.jbehave.web.selenium.RemoteWebDriverProvider">
+        <bean id="driverProvider" class="com.griddynamics.web.selenium.CustomPropertyRemoteWebDriverProvider">
         </bean>
     </beans>
 
     <beans profile="local">
-        <bean id="driverProvider" class="org.jbehave.web.selenium.PropertyWebDriverProvider">
+        <bean id="driverProvider" class="com.griddynamics.web.selenium.CustomPropertyWebDriverProvider">
         </bean>
     </beans>
 </beans>
