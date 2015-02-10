@@ -34,7 +34,7 @@
 
         <jbehave.core.version>3.8</jbehave.core.version>
         <jbehave.web.version>3.6-beta-1</jbehave.web.version>
-        <selenium.version>2.34.0</selenium.version>
+        <selenium.version>2.44.0</selenium.version>
         <jbehave.site.version>3.1.1</jbehave.site.version>
         <junit.version>4.11</junit.version>
         <spring.version>3.2.4.RELEASE</spring.version>
