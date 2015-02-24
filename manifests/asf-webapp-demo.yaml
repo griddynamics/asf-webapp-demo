@@ -82,9 +82,19 @@ application:
                       - |
                           ID=$$(docker run -d -p 8080 {$.docker_registry}/{$.image_name}:{$.image_version})
                           PORT=$$(docker port $${{ID}} | cut -d ':' -f2)
-                          echo "ID=$${{ID}}" > id.properties
+                          echo "ID=$${{ID}}" > asf-webapp-demo.properties
+                          echo "PORT=$${{PORT}}" > asf-webapp-demo.properties
                           sleep 60
                           curl -L --silent --output /dev/null --fail --retry 5 --retry-delay 30 http://{$.docker_vm_ip}:$${{PORT}}/asf-webapp-demo
+
+              - publish_endpoint:
+                  action: execrun
+                  precedingPhases: [ "deploy_webapp" ]
+                  parameters:
+                    roles: [ "docker" ]
+                    command:
+                      - |
+                          source asf-webapp-demo.properties
                           echo "http://{$.docker_vm_ip}:$${{PORT}}/asf-webapp-demo"
                   output:
                     url: stdout
@@ -100,7 +110,9 @@ application:
                     roles: [ "docker" ]
                     command:
                       - |
-                          source id.properties
-                          docker rm -f $${{ID}}
+                          source asf-webapp-demo.properties
+                          if [ $${{ID}} != '' ]; then
+                            docker rm -f $${{ID}}
+                          fi
               - destroy:
                   action: undeployEnv
