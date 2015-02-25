@@ -9,11 +9,15 @@
     <artifactId>asf-webapp-docker</artifactId>
     <packaging>pom</packaging>
 
+    <properties>
+        <webappVersion>${project.version}</webappVersion>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>spring-petclinic</artifactId>
-            <version>${project.version}</version>
+            <version>${webappVersion}</version>
             <type>war</type>
         </dependency>
     </dependencies>
