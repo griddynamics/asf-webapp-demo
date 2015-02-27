@@ -24,16 +24,23 @@ application:
     input.image_version:    undefined
     input.docker_registry:  undefined
     input.docker_vm_ip:     undefined
+  bindings:
+    - [webapp, properties]
   interfaces:
     input:
-      docker_registry:  "bind(workflow#input.docker_registry)"
-      docker_vm_ip:     "bind(workflow#input.docker_vm_ip)"
-      image_name:       "bind(workflow#input.image_name)"
-      image_version:    "bind(workflow#input.image_version)"
+      docker_registry:  "bind(webapp#input.docker_registry)"
+      docker_vm_ip:     "bind(webapp#input.docker_vm_ip)"
+      image_name:       "bind(webapp#input.image_name)"
+      image_version:    "bind(webapp#input.image_version)"
     output:
-      webapp_endpoint:  "bind(workflow#result.webapp_endpoint)"
+      webapp_endpoint:  "bind(webapp#result.webapp_endpoint)"
   components:
-    workflow:
+    properties:
+      type: reference.Service
+      interfaces:
+        properties:
+          mysql_password: "publish-signal(string)"
+    webapp:
       type: workflow.Instance
       interfaces:
         input:
@@ -50,8 +57,7 @@ application:
             type: configuration(string)
             name: ASF Webapp image version
         properties:
-          nexus_username: consume-signal(string)
-          nexus_password: consume-signal(string)
+          mysql_password: consume-signal(string)
         result:
           webapp_endpoint:
             type: publish-signal(string)
@@ -73,17 +79,23 @@ application:
                     jcloudsCredential:  undefined
                     jcloudsEndpoint:    undefined
 
+              - get_properties:
+                  action: getEnvironmentProperties
+                  output:
+                    environment: result
+
               - deploy_webapp:
                   action: execrun
-                  precedingPhases: [ "provision" ]
+                  precedingPhases: [ "provision", "get_properties" ]
                   parameters:
                     roles: [ "docker" ]
                     command:
                       - |
-                          ID=$$(docker run -d -p 8080 {$.docker_registry}/{$.image_name}:{$.image_version})
+                          MYSQL_ID=$$(docker run -d -e MYSQL_ROOT_PASSWORD="{$.environment.properties.mysql_password}" -e MYSQL_DATABASE=petclinic -d mysql)
+                          ID=$$(docker run -d -p 8080 --link $${{MYSQL_ID}}:mysql -e DB=mysql {$.docker_registry}/{$.image_name}:{$.image_version})
                           PORT=$$(docker port $${{ID}} | cut -d ':' -f2)
                           echo "ID=$${{ID}}" > asf-webapp-demo.properties
-                          echo "PORT=$${{PORT}}" > asf-webapp-demo.properties
+                          echo "PORT=$${{PORT}}" >> asf-webapp-demo.properties
                           sleep 60
                           curl -L --silent --output /dev/null --fail --retry 5 --retry-delay 30 http://{$.docker_vm_ip}:$${{PORT}}/asf-webapp-demo
 
@@ -116,3 +128,4 @@ application:
                           fi
               - destroy:
                   action: undeployEnv
+
