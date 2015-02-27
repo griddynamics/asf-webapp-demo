@@ -1,7 +1,12 @@
 # Version: 0.0.1
-
 FROM tomcat:7.0.59-jre7
 MAINTAINER Grigory Silantyev <gsilantyev@griddynamics.com>
 
-COPY target/files/spring-petclinic.war /usr/local/tomcat/webapps/asf-webapp-demo.war
+ENV DB hsql
+WORKDIR $CATALINA_HOME
 
+ADD run_tomcat.sh /run_tomcat.sh
+ADD target/asf-webapp-demo.war webapps/asf-webapp-demo.war
+
+CMD "/run_tomcat.sh"
+EXPOSE 8080
