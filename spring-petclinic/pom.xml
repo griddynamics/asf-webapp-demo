@@ -166,8 +166,8 @@
 		</dependency>
 
 
-		<!-- Database connection pool 
-		See here for more details on commons-dbcp versus tomcat-jdbc: 
+		<!-- Database connection pool
+		See here for more details on commons-dbcp versus tomcat-jdbc:
     	http://blog.ippon.fr/2013/03/13/improving-the-performance-of-the-spring-petclinic-sample-application-part-3-of-5/
     -->
 		<dependency>
@@ -197,7 +197,7 @@
 			<artifactId>rome</artifactId>
 			<version>${rome.version}</version>
 		</dependency>
-		
+
 		<!-- Date and Time -->
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -225,7 +225,7 @@
 		</dependency>
 
 		<!-- For MySql only -->
-		<!-- <dependency> <groupId>mysql</groupId> <artifactId>mysql-connector-java</artifactId> <version>${mysql.version}</version> </dependency> -->
+		<dependency> <groupId>mysql</groupId> <artifactId>mysql-connector-java</artifactId> <version>${mysql.version}</version> </dependency>
 		<!-- HIBERNATE -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -237,7 +237,7 @@
 			<artifactId>hibernate-validator</artifactId>
 			<version>${hibernate-validator.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-ehcache</artifactId>
@@ -270,7 +270,7 @@
 			<artifactId>jquery</artifactId>
 			<version>${webjars-jquery.version}</version>
 		</dependency>
-		
+
 		<!-- Test Artifacts -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -322,9 +322,9 @@
 	<dependencyManagement>
 		<dependencies>
 			<!--
-				Force the version of all the spring jars (core, beans, context, ...) 
-				pulled by spring-data-jpa:1.3.4.RELEASE to 3.2.x when spring-data pulls 
-				the 3.1.x versions to prevent some misbehaviors of maven which sometimes 
+				Force the version of all the spring jars (core, beans, context, ...)
+				pulled by spring-data-jpa:1.3.4.RELEASE to 3.2.x when spring-data pulls
+				the 3.1.x versions to prevent some misbehaviors of maven which sometimes
 				pulls both 3.2.x and 3.1.x versions of spring-core, spring-beans and spring-context
 			-->
 			<dependency>
@@ -365,7 +365,7 @@
 		<defaultGoal>install</defaultGoal>
 		<testResources>
 		  <testResource>
-		  	<!-- declared explicitly so Spring config files can be placed next to their corresponding JUnit test class 
+		  	<!-- declared explicitly so Spring config files can be placed next to their corresponding JUnit test class
 		  		(see example with ValidatorTests) -->
 		    <directory>${project.basedir}/src/test/java</directory>
 		  </testResource>
