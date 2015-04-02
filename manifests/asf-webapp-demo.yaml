@@ -20,112 +20,120 @@
 
 application:
   configuration:
-    input.image_name:       "asf-webapp"
-    input.image_version:    undefined
-    input.docker_registry:  undefined
-    input.docker_vm_ip:     undefined
-  bindings:
-    - [webapp, properties]
+    input.artifact_repo: "builds-main"
+    input.artifact_group: "com.griddynamics.asf.webapp-demo"
+    input.artifact_id: "asf-webapp-demo"
+    input.cookbooks_url: "http://gd-asf.s3.amazonaws.com/webapp_cookbooks.tar.gz"
   interfaces:
     input:
-      docker_registry:  "bind(webapp#input.docker_registry)"
-      docker_vm_ip:     "bind(webapp#input.docker_vm_ip)"
-      image_name:       "bind(webapp#input.image_name)"
-      image_version:    "bind(webapp#input.image_version)"
+      nexus_url: "bind(workflow#input.nexus_url)"
+      artifact_version: "bind(workflow#input.artifact_version)"
+      artifact_repo: "bind(workflow#input.artifact_repo)"
+      artifact_group: "bind(workflow#input.artifact_group)"
+      artifact_id: "bind(workflow#input.artifact_id)"
+      cookbooks_url: "bind(workflow#input.cookbooks_url)"
     output:
-      webapp_endpoint:  "bind(webapp#result.webapp_endpoint)"
+      webapp_endpoint: "bind(workflow#result.webapp_endpoint)"
+      webapp_host_ip: "bind(workflow#result.webapp_host_ip)"
+
+  bindings:
+      - [workflow, props]
+
   components:
-    properties:
-      type: reference.Service
-      interfaces:
-        properties:
-          mysql_password: "publish-signal(string)"
-    webapp:
+    workflow:
       type: workflow.Instance
       interfaces:
         input:
-          docker_registry:
+          nexus_url:
             type: configuration(string)
-            name: Docker Registry Endpoint
-          docker_vm_ip:
+            name: Nexus instance url
+          artifact_version:
             type: configuration(string)
-            name: Docker VM IP
-          image_name:
+            name: Nexus artifact version
+          artifact_repo:
             type: configuration(string)
-            name: ASF Webapp image name
-          image_version:
+            name: Nexus artifact repository
+          artifact_group:
             type: configuration(string)
-            name: ASF Webapp image version
+            name: Nexus artifact group
+          artifact_id:
+            type: configuration(string)
+            name: Nexus artifact id
+          cookbooks_url:
+            type: configuration(string)
+            name: Cookbooks Tarball URL
         properties:
-          mysql_password: consume-signal(string)
+          nexus_username: consume-signal(string)
+          nexus_password: consume-signal(string)
         result:
           webapp_endpoint:
             type: publish-signal(string)
             name: Webapp Endpoint
+          webapp_host_ip:
+            type: publish-signal(string)
+            name: Instance IP
+        keypair-store:
+          get-keypair: "send-command(string id => object privateKey)"
+
+      required: [ properties ]
+
       configuration:
         configuration.triggers: {}
         configuration.workflows:
           launch:
             steps:
-              - provision:
-                  action: provisionVms
-                  parameters:
-                    roleName:           "docker"
-                    staticIps:          [ "{$.docker_vm_ip}" ]
-                    vmIdentity:         "core"
-                    hardwareId:         m1.small
-                    jcloudsIdentity:    undefined
-                    jcloudsProvider:    undefined
-                    jcloudsCredential:  undefined
-                    jcloudsEndpoint:    undefined
-
-              - get_properties:
+              - get_env_props:
                   action: getEnvironmentProperties
                   output:
-                    environment: result
+                    env: result
+
+              - start_vm:
+                  action: provisionVms
+                  parameters:
+                    roleName: webapp
+                    hardwareId: m1.small
+                    quantity: 1
+                    retryCount: 1
+                    jcloudsProvider: aws-ec2
+                    jcloudsEndpoint: https://ec2.us-east-1.amazonaws.com
+                    jcloudsRegions: us-east-1
+                    jcloudsNodeNamePrefix: asf-webapp-demo
+                    vmIdentity: ec2-user
+                    imageId: us-east-1/ami-dac845b2
+                    ec2SecurityGroup: default
+                    providerSettings:
+                      userData: "#!/bin/bash\nmkdir -p /etc/chef/ohai/hints\ntouch /etc/chef/ohai/hints/ec2.json"
+                  output:
+                    webapp_host_ip: ips
 
               - deploy_webapp:
-                  action: execrun
-                  precedingPhases: [ "provision", "get_properties" ]
+                  action: chefsolo
+                  precedingPhases: [ get_env_props, start_vm ]
                   parameters:
-                    roles: [ "docker" ]
-                    command:
-                      - |
-                          MYSQL_ID=$$(docker run -d -e MYSQL_ROOT_PASSWORD="{$.environment.properties.mysql_password}" -e MYSQL_DATABASE=petclinic -d mysql)
-                          ID=$$(docker run -d -p 8080 --link $${{MYSQL_ID}}:mysql -e DB=mysql {$.docker_registry}/{$.image_name}:{$.image_version})
-                          PORT=$$(docker port $${{ID}} | cut -d ':' -f2)
-                          echo "ID=$${{ID}}" > asf-webapp-demo.properties
-                          echo "PORT=$${{PORT}}" >> asf-webapp-demo.properties
-                          sleep 60
-                          curl -L --silent --output /dev/null --fail --retry 5 --retry-delay 30 http://{$.docker_vm_ip}:$${{PORT}}/asf-webapp-demo
+                    roles: [ webapp ]
+                    recipeUrl: "{$.cookbooks_url}"
+                    runList: [ "recipe[asf-webapp-demo]" ]
+                    version: "11.8.2"
+                    jattrs:
+                      asf-webapp-demo:
+                        url: '{$.nexus_url}/service/local/artifact/maven/content?r={$.artifact_repo}&g={$.artifact_group}&a={$.artifact_id}&v={$.artifact_version}&e=war'
+                        auth:
+                          username: "{$.env.properties.nexus_username}"
+                          password: "{$.env.properties.nexus_password}"
 
-              - publish_endpoint:
-                  action: execrun
-                  precedingPhases: [ "deploy_webapp" ]
-                  parameters:
-                    roles: [ "docker" ]
-                    command:
-                      - |
-                          source asf-webapp-demo.properties
-                          echo "http://{$.docker_vm_ip}:$${{PORT}}/asf-webapp-demo"
-                  output:
-                    url: stdout
             return:
               webapp_endpoint:
-                value: "{$.url.*.[0]}"
+                value: "http://{$.webapp_host_ip[0]}:8080/asf-webapp-demo"
+              webapp_host_ip:
+                value: "{$.webapp_host_ip[0]}"
 
           destroy:
             steps:
-              - destoy_webapp:
-                  action: execrun
-                  parameters:
-                    roles: [ "docker" ]
-                    command:
-                      - |
-                          source asf-webapp-demo.properties
-                          if [ $${{ID}} != '' ]; then
-                            docker rm -f $${{ID}}
-                          fi
-              - destroy:
-                  action: undeployEnv
-
+                - destroy:
+                    action: undeployEnv
+    props:
+      type: reference.Service
+      interfaces:
+        properties:
+          nexus_username: "publish-signal(string)"
+          nexus_password: "publish-signal(string)"
