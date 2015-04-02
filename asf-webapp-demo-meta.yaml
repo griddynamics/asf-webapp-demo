@@ -1,0 +1,19 @@
+kit:
+  name: "ASF Webapp Demo"
+  link: https://github.com/griddynamics/asf-webapp-demo
+  applications:
+    - name: "ASF Webapp Demo Chef"
+      manifest: http://gd-asf.s3.amazonaws.com/asf-webapp-demo.yaml
+    - name: "ASF Webapp Demo Docker CI"
+      manifest: http://gd-asf.s3.amazonaws.com/asf-webapp-demo-docker-ci.yaml
+    - name: "ASF Webapp Demo Docker Production"
+      manifest: http://gd-asf.s3.amazonaws.com/asf-webapp-demo-docker-production.yaml
+  provider:
+    name: "Grid Dynamics"
+    link: http://www.griddynamics.com
+  documentation:
+    overview: |
+      ASF-Webapp-Demo is a sample application based on
+      [Spring Petclinic](https://github.com/spring-projects/spring-petclinic).
+      It also contains integration tests and Qubell manifests, Chef cookbooks
+      and Dockerfile for deployment.
