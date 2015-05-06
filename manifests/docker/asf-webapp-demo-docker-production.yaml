@@ -98,7 +98,7 @@ application:
                     command:
                       - |
                           MYSQL_ID=$$(docker run -d -e MYSQL_ROOT_PASSWORD="{$.environment.properties.mysql_password}" -e MYSQL_DATABASE=petclinic --name "asf-webapp-demo-mysql-{$.instanceId}" -d mysql)
-                          docker run -d -p 8080 --link $${{MYSQL_ID}}:mysql -e DB=mysql --name "asf-webapp-demo-{$.instanceId}" {$.docker_registry}/{$.image_name}:{$.image_version}
+                          docker run -d -p 8080 --link asf-webapp-demo-mysql-{$.instanceId}:mysql -e DB=mysql --name "asf-webapp-demo-{$.instanceId}" {$.docker_registry}/{$.image_name}:{$.image_version}
                           PORT=$$(docker port "asf-webapp-demo-{$.instanceId}" | cut -d ':' -f2)
                           sleep 60
                           curl -L --silent --output /dev/null --fail --retry 5 --retry-delay 30 http://{$.docker_vm_ip}:$${{PORT}}/asf-webapp-demo
